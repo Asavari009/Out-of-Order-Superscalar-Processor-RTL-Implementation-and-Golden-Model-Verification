@@ -1,0 +1,14 @@
+# === Simulator Command =========
+# (run_trace_report.sv) /dev/null
+# === Processor Configuration ===
+# ROB_SIZE = 32
+# IQ_SIZE  = 16
+# WIDTH    = 4
+# === Simulation Results ========
+# Dynamic Instruction Count    = 0
+# Cycles                       = 1
+# Instructions Per Cycle (IPC) = 0.00
+- verif/sim_trace/run_trace_report.sv:238: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.053 devel
+- Verilator: $finish at 26ns; walltime 0.001 s; speed 49.488 us/s
+- Verilator: cpu 0.001 s on 1 threads; allocated 4 MB

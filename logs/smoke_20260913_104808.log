@@ -1,0 +1,140 @@
+=== tb_rob (DUT: rob) ===
+sim start
+t1
+t2
+t3
+PASS: reset free_entries == ROB_SIZE
+PASS: alloc_rob_idx[0]==0
+PASS: alloc_rob_idx[1]==1
+PASS: free_entries==2 after alloc 2
+PASS: rt_count==0 (nothing ready)
+PASS: rt_count==1 (pre-edge, entry0 ready)
+PASS: rt_valid[0]==1
+PASS: rt_rob_idx[0]==0
+PASS: rt_dst_areg[0]==5
+PASS: rt_seq_no[0]==0
+PASS: entry_ready[0]==1 (readiness query port)
+PASS: entry_ready[1]==0 (not woken)
+PASS: free_entries==3 after 1 retire
+ALL PASS
+- verif/tb_smoke/tb_rob.sv:130: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.053 devel
+- Verilator: $finish at 76ns; walltime 0.000 s; speed 430.373 us/s
+- Verilator: cpu 0.000 s on 1 threads; allocated 4 MB
+  -> PASS
+
+=== tb_rmt (DUT: rmt) ===
+PASS: instr1.src1.valid==1
+PASS: instr1.src1.is_rob==1 (renamed within same bundle)
+PASS: instr1.src1.tag==3 (instr0's rob idx)
+PASS: post-cycle lookup of r5: valid
+PASS: post-cycle lookup of r5: is_rob
+PASS: post-cycle lookup of r5: tag==3
+PASS: after retire, r5 lookup is_rob==0 (committed/free)
+PASS: after retire, r5 lookup valid==1 (has a value, just not pending)
+PASS: multi-retire: r6 cleared (is_rob==0)
+PASS: multi-retire: r7 also cleared (is_rob==0)
+PASS: WAW: instr1 (same bundle) reading r9 sees instr0's fresh tag=6
+PASS: WAW: post-bundle r9 lookup sees LATER write, tag==7 (not 6)
+ALL PASS
+- verif/tb_smoke/tb_rmt.sv:181: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.053 devel
+- Verilator: $finish at 77ns; walltime 0.000 s; speed 458.677 us/s
+- Verilator: cpu 0.000 s on 1 threads; allocated 4 MB
+  -> PASS
+
+=== tb_iq (DUT: issue_queue) ===
+PASS: reset free_entries==IQ_SIZE
+PASS: before 2nd disp lands: 2 ready oldest are seq5,seq6
+PASS: after issue+2nd disp: entries are seq3,seq4
+PASS: IQ empty after all issued
+PASS: no more candidates
+PASS: dependent instr not yet selectable
+PASS: same-cycle wakeup makes it selectable
+PASS: selected seq_no==10
+ALL PASS
+- verif/tb_smoke/tb_iq.sv:159: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.053 devel
+- Verilator: $finish at 67ns; walltime 0.000 s; speed 191.498 us/s
+- Verilator: cpu 0.000 s on 1 threads; allocated 4 MB
+  -> PASS
+
+=== tb_exu (DUT: exec_units) ===
+PASS: reset: no completions
+PASS: latency-1 op fires wb on its first EX cycle
+PASS: latency-1 op gone the cycle after firing
+PASS: latency-5 op: EX cycle 1 not firing
+PASS: latency-5 op: EX cycle 2 not firing
+PASS: latency-5 op: EX cycle 3 not firing
+PASS: latency-5 op: EX cycle 4 not firing
+PASS: latency-5 op: EX cycle 5 FIRES
+PASS: latency-5 op: gone after firing
+PASS: simultaneous completion: rob1 fires
+PASS: simultaneous completion: rob2 fires
+PASS: simultaneous completion: exactly 2 wb ports active
+ALL PASS
+- verif/tb_smoke/tb_exu.sv:128: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.053 devel
+- Verilator: $finish at 126ns; walltime 0.000 s; speed 803.705 us/s
+- Verilator: cpu 0.000 s on 1 threads; allocated 4 MB
+  -> PASS
+
+=== tb_pipe_reg (DUT: pipe_reg) ===
+PASS: reset: not occupied
+PASS: reset: avail
+PASS: after push: occupied
+PASS: after push: avail is false (no consume yet)
+PASS: after push: out_data[0]==0xAA
+PASS: after push: out_data[1]==0xBB
+PASS: after push: out_valid==2'b11
+PASS: stalled: still holds original data (0xAA)
+PASS: stalled: still occupied
+PASS: after consume alone: not occupied
+PASS: after consume alone: avail
+PASS: loaded first bundle for refill test
+PASS: same-cycle avail asserted (occupied|consume)
+PASS: same-cycle refill: out_data[0]==0x22 (new, not old 0x11)
+PASS: same-cycle refill: out_data[1]==0x33
+PASS: same-cycle refill: occupied
+PASS: flush clears occupied
+ALL PASS
+- verif/tb_smoke/tb_pipe_reg.sv:93: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.053 devel
+- Verilator: $finish at 86ns; walltime 0.000 s; speed 522.695 us/s
+- Verilator: cpu 0.000 s on 1 threads; allocated 4 MB
+  -> PASS
+
+=== tb_sched_reg (DUT: sched_reg) ===
+PASS: reset: not occupied
+PASS: loaded: occupied
+PASS: loaded: src1_ready starts false
+PASS: still stalled, still not ready (no wakeup yet)
+PASS: same-cycle wakeup while stalled: EFFECTIVE ready NOW true
+PASS: after latch: ready persists with broadcast gone
+PASS: after consume: empty
+ALL PASS
+- verif/tb_smoke/tb_sched_reg.sv:104: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.053 devel
+- Verilator: $finish at 66ns; walltime 0.000 s; speed 405.022 us/s
+- Verilator: cpu 0.000 s on 1 threads; allocated 4 MB
+  -> PASS
+
+=== tb_pipeline_basic (DUT: pipe_reg sched_reg rmt rob issue_queue exec_units ooo_pipeline) ===
+t=136000 RETIRE seq=0 dst=1
+t=146000 RETIRE seq=1 dst=2
+PASS: instr0 (producer) retired
+PASS: instr1 (consumer) retired
+PASS: instr1 retires AFTER instr0 (RAW respected)
+ALL PASS
+- verif/tb_smoke/tb_pipeline_basic.sv:74: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.053 devel
+- Verilator: $finish at 436ns; walltime 0.000 s; speed 1.170 ms/s
+- Verilator: cpu 0.000 s on 1 threads; allocated 4 MB
+  -> PASS
+
+=== golden C++ model ===
+-----------DONE WITH sim-----------
+my work is done here...
+  -> ran OK, output in /tmp/ooo_rtl_smoke/golden_tiny.log
+
+ALL SMOKE TESTS PASSED

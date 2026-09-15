@@ -1,0 +1,65 @@
+=== val1 (ROB_SIZE=16 IQ_SIZE=8 WIDTH=1 trace=val_trace_gcc1) ===
+  golden : count=10000 cycles=10263 ipc=0.97
+  RTL    : count=10000 cycles=10263 ipc=0.97
+  -> EXACT cycle match (summary)
+  -> ALL FIELDS MATCH (full per-instruction report, all 9 stages)
+  full report saved: logs/val_rtl_reports/val1_report.txt
+  -> PASS (exact match)
+
+=== val2 (ROB_SIZE=16 IQ_SIZE=8 WIDTH=2 trace=val_trace_gcc1) ===
+  golden : count=10000 cycles=7237 ipc=1.38
+  RTL    : count=10000 cycles=7237 ipc=1.38
+  -> EXACT cycle match (summary)
+  -> ALL FIELDS MATCH (full per-instruction report, all 9 stages)
+  full report saved: logs/val_rtl_reports/val2_report.txt
+  -> PASS (exact match)
+
+=== val3 (ROB_SIZE=60 IQ_SIZE=15 WIDTH=3 trace=val_trace_gcc1) ===
+  golden : count=10000 cycles=3589 ipc=2.79
+  RTL    : count=10000 cycles=3589 ipc=2.79
+  -> EXACT cycle match (summary)
+  -> ALL FIELDS MATCH (full per-instruction report, all 9 stages)
+  full report saved: logs/val_rtl_reports/val3_report.txt
+  -> PASS (exact match)
+
+=== val4 (ROB_SIZE=64 IQ_SIZE=16 WIDTH=8 trace=val_trace_gcc1) ===
+  golden : count=10000 cycles=2784 ipc=3.59
+  RTL    : count=10000 cycles=2784 ipc=3.59
+  -> EXACT cycle match (summary)
+  -> ALL FIELDS MATCH (full per-instruction report, all 9 stages)
+  full report saved: logs/val_rtl_reports/val4_report.txt
+  -> PASS (exact match)
+
+=== val5 (ROB_SIZE=64 IQ_SIZE=16 WIDTH=4 trace=val_trace_perl1) ===
+  golden : count=10000 cycles=3566 ipc=2.80
+  RTL    : count=10000 cycles=3566 ipc=2.80
+  -> EXACT cycle match (summary)
+  -> ALL FIELDS MATCH (full per-instruction report, all 9 stages)
+  full report saved: logs/val_rtl_reports/val5_report.txt
+  -> PASS (exact match)
+
+=== val6 (ROB_SIZE=128 IQ_SIZE=16 WIDTH=5 trace=val_trace_perl1) ===
+  golden : count=10000 cycles=3408 ipc=2.93
+  RTL    : count=10000 cycles=3408 ipc=2.93
+  -> EXACT cycle match (summary)
+  -> ALL FIELDS MATCH (full per-instruction report, all 9 stages)
+  full report saved: logs/val_rtl_reports/val6_report.txt
+  -> PASS (exact match)
+
+=== val7 (ROB_SIZE=256 IQ_SIZE=64 WIDTH=5 trace=val_trace_perl1) ===
+  golden : count=10000 cycles=2111 ipc=4.74
+  RTL    : count=10000 cycles=2111 ipc=4.74
+  -> EXACT cycle match (summary)
+  -> ALL FIELDS MATCH (full per-instruction report, all 9 stages)
+  full report saved: logs/val_rtl_reports/val7_report.txt
+  -> PASS (exact match)
+
+=== val8 (ROB_SIZE=512 IQ_SIZE=64 WIDTH=7 trace=val_trace_perl1) ===
+  golden : count=10000 cycles=1603 ipc=6.24
+  RTL    : count=10000 cycles=1603 ipc=6.24
+  -> EXACT cycle match (summary)
+  -> ALL FIELDS MATCH (full per-instruction report, all 9 stages)
+  full report saved: logs/val_rtl_reports/val8_report.txt
+  -> PASS (exact match)
+
+ALL RTL VS GOLDEN VAL CONFIGS MATCHED EXACTLY (summary + full per-instruction report)

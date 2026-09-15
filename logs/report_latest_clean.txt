@@ -1,0 +1,10 @@
+# === Simulator Command =========
+# (run_trace_report.sv) /dev/null
+# === Processor Configuration ===
+# ROB_SIZE = 32
+# IQ_SIZE  = 16
+# WIDTH    = 4
+# === Simulation Results ========
+# Dynamic Instruction Count    = 0
+# Cycles                       = 1
+# Instructions Per Cycle (IPC) = 0.00

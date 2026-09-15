@@ -1,0 +1,124 @@
+%Warning-TIMESCALEMOD: rtl/ooo_pkg.sv:25:9: Timescale missing on this module as other modules have it (IEEE 1800-2023 3.14.2.3)
+   25 | package ooo_pkg;
+      |         ^~~~~~~
+                       verif/sim_trace/run_trace_report.sv:29:8: ... Location of module with timescale
+   29 | module run_trace_report;
+      |        ^~~~~~~~~~~~~~~~
+                       ... For warning description see https://verilator.org/warn/TIMESCALEMOD?v=5.053
+                       ... Use "/* verilator lint_off TIMESCALEMOD */" and lint_on around source to disable this message.
+%Warning-TIMESCALEMOD: rtl/pipe_reg.sv:28:8: Timescale missing on this module as other modules have it (IEEE 1800-2023 3.14.2.3)
+   28 | module pipe_reg
+      |        ^~~~~~~~
+                       verif/sim_trace/run_trace_report.sv:29:8: ... Location of module with timescale
+   29 | module run_trace_report;
+      |        ^~~~~~~~~~~~~~~~
+%Warning-TIMESCALEMOD: rtl/sched_reg.sv:31:8: Timescale missing on this module as other modules have it (IEEE 1800-2023 3.14.2.3)
+   31 | module sched_reg
+      |        ^~~~~~~~~
+                       verif/sim_trace/run_trace_report.sv:29:8: ... Location of module with timescale
+   29 | module run_trace_report;
+      |        ^~~~~~~~~~~~~~~~
+%Warning-TIMESCALEMOD: rtl/rmt.sv:20:8: Timescale missing on this module as other modules have it (IEEE 1800-2023 3.14.2.3)
+   20 | module rmt
+      |        ^~~
+                       verif/sim_trace/run_trace_report.sv:29:8: ... Location of module with timescale
+   29 | module run_trace_report;
+      |        ^~~~~~~~~~~~~~~~
+%Warning-TIMESCALEMOD: rtl/rob.sv:39:8: Timescale missing on this module as other modules have it (IEEE 1800-2023 3.14.2.3)
+   39 | module rob
+      |        ^~~
+                       verif/sim_trace/run_trace_report.sv:29:8: ... Location of module with timescale
+   29 | module run_trace_report;
+      |        ^~~~~~~~~~~~~~~~
+%Warning-TIMESCALEMOD: rtl/issue_queue.sv:42:8: Timescale missing on this module as other modules have it (IEEE 1800-2023 3.14.2.3)
+   42 | module issue_queue
+      |        ^~~~~~~~~~~
+                       verif/sim_trace/run_trace_report.sv:29:8: ... Location of module with timescale
+   29 | module run_trace_report;
+      |        ^~~~~~~~~~~~~~~~
+%Warning-TIMESCALEMOD: rtl/exec_units.sv:42:8: Timescale missing on this module as other modules have it (IEEE 1800-2023 3.14.2.3)
+   42 | module exec_units
+      |        ^~~~~~~~~~
+                       verif/sim_trace/run_trace_report.sv:29:8: ... Location of module with timescale
+   29 | module run_trace_report;
+      |        ^~~~~~~~~~~~~~~~
+%Warning-TIMESCALEMOD: rtl/ooo_pipeline.sv:42:8: Timescale missing on this module as other modules have it (IEEE 1800-2023 3.14.2.3)
+   42 | module ooo_pipeline
+      |        ^~~~~~~~~~~~
+                       verif/sim_trace/run_trace_report.sv:29:8: ... Location of module with timescale
+   29 | module run_trace_report;
+      |        ^~~~~~~~~~~~~~~~
+%Warning-WIDTHTRUNC: rtl/issue_queue.sv:275:29: Operator ASSIGNDLY expects 5 bits on the Assign RHS, but Assign RHS's SEL generates 9 bits.
+                                              : ... note: In instance 'run_trace_report.dut.u_iq'
+  275 |           src1_tag_q[e]     <= s1.tag;
+      |                             ^~
+                     ... For warning description see https://verilator.org/warn/WIDTHTRUNC?v=5.053
+                     ... Use "/* verilator lint_off WIDTHTRUNC */" and lint_on around source to disable this message.
+%Warning-WIDTHTRUNC: rtl/issue_queue.sv:279:29: Operator ASSIGNDLY expects 5 bits on the Assign RHS, but Assign RHS's SEL generates 9 bits.
+                                              : ... note: In instance 'run_trace_report.dut.u_iq'
+  279 |           src2_tag_q[e]     <= s2.tag;
+      |                             ^~
+%Warning-WIDTHEXPAND: rtl/rob.sv:233:26: Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'count_q' generates 6 bits.
+                                       : ... note: In instance 'run_trace_report.dut.u_rob'
+  233 |       count_q <= count_q + alloc_count - rt_count;
+      |                          ^
+                      ... For warning description see https://verilator.org/warn/WIDTHEXPAND?v=5.053
+                      ... Use "/* verilator lint_off WIDTHEXPAND */" and lint_on around source to disable this message.
+%Warning-WIDTHEXPAND: rtl/rob.sv:233:40: Operator SUB expects 32 bits on the RHS, but RHS's VARREF 'rt_count' generates 3 bits.
+                                       : ... note: In instance 'run_trace_report.dut.u_rob'
+  233 |       count_q <= count_q + alloc_count - rt_count;
+      |                                        ^
+%Warning-WIDTHTRUNC: rtl/rob.sv:233:15: Operator ASSIGNDLY expects 6 bits on the Assign RHS, but Assign RHS's SUB generates 32 bits.
+                                      : ... note: In instance 'run_trace_report.dut.u_rob'
+  233 |       count_q <= count_q + alloc_count - rt_count;
+      |               ^~
+%Warning-WIDTHEXPAND: rtl/rmt.sv:98:48: Operator ASSIGN expects 9 bits on the Assign RHS, but Assign RHS's ARRAYSEL generates 5 bits.
+                                      : ... note: In instance 'run_trace_report.dut.u_rmt'
+   98 |         t.valid = 1'b1; t.is_rob = 1'b1; t.tag = shadow_tag[i][rn_src1_areg[i]]; t.gen = shadow_gen[i][rn_src1_areg[i]];
+      |                                                ^
+%Warning-WIDTHEXPAND: rtl/rmt.sv:100:48: Operator ASSIGN expects 9 bits on the Assign RHS, but Assign RHS's ARRAYSEL generates 7 bits.
+                                       : ... note: In instance 'run_trace_report.dut.u_rmt'
+  100 |         t.valid = 1'b1; t.is_rob = 1'b0; t.tag = rn_src1_areg[i]; t.gen = '0;  
+      |                                                ^
+%Warning-WIDTHEXPAND: rtl/rmt.sv:107:48: Operator ASSIGN expects 9 bits on the Assign RHS, but Assign RHS's ARRAYSEL generates 5 bits.
+                                       : ... note: In instance 'run_trace_report.dut.u_rmt'
+  107 |         t.valid = 1'b1; t.is_rob = 1'b1; t.tag = shadow_tag[i][rn_src2_areg[i]]; t.gen = shadow_gen[i][rn_src2_areg[i]];
+      |                                                ^
+%Warning-WIDTHEXPAND: rtl/rmt.sv:109:48: Operator ASSIGN expects 9 bits on the Assign RHS, but Assign RHS's ARRAYSEL generates 7 bits.
+                                       : ... note: In instance 'run_trace_report.dut.u_rmt'
+  109 |         t.valid = 1'b1; t.is_rob = 1'b0; t.tag = rn_src2_areg[i]; t.gen = '0;
+      |                                                ^
+%Warning-WIDTHEXPAND: rtl/ooo_pipeline.sv:157:69: Operator GTE expects 6 bits on the RHS, but RHS's REPLICATE generates 4 bits.
+                                                : ... note: In instance 'run_trace_report.dut'
+  157 |   assign rename_fire = rn_occupied && rr_avail && (rob_free_entries >= {1'b0, rn_valid_count});
+      |                                                                     ^~
+%Warning-WIDTHEXPAND: rtl/ooo_pipeline.sv:259:58: Operator GTE expects 5 bits on the RHS, but RHS's REPLICATE generates 4 bits.
+                                                : ... note: In instance 'run_trace_report.dut'
+  259 |   assign dispatch_fire = di_occupied && (iq_free_entries >= {1'b0, di_valid_count});
+      |                                                          ^~
+%Warning-WIDTHEXPAND: verif/sim_trace/run_trace_report.sv:74:21: Operator ASSIGN expects 64 bits on the Assign RHS, but Assign RHS's VARREF 'pc_hex' generates 32 bits.
+                                                               : ... note: In instance 'run_trace_report'
+   74 |         d.pc        = pc_hex;
+      |                     ^
+make[1]: Entering directory '/tmp/ooo_rtl_report_obj'
+g++ -Os  -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated.o /mnt/ncsudrive/a/ahangal/local/share/verilator/include/verilated.cpp
+g++ -Os  -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_timing.o /mnt/ncsudrive/a/ahangal/local/share/verilator/include/verilated_timing.cpp
+g++ -Os  -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_threads.o /mnt/ncsudrive/a/ahangal/local/share/verilator/include/verilated_threads.cpp
+g++ -Os  -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -x c++-header Vrun_trace_report__pch.h -o Vrun_trace_report__pch.h.fast.gch
+g++   -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -x c++-header Vrun_trace_report__pch.h -o Vrun_trace_report__pch.h.slow.gch
+g++   -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vrun_trace_report__pch.h.slow -c Vrun_trace_report___024root__Slow.cpp
+g++   -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vrun_trace_report__pch.h.slow -c Vrun_trace_report___024root__0__Slow.cpp
+g++   -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vrun_trace_report__pch.h.slow -c Vrun_trace_report___024root__1__Slow.cpp
+g++   -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vrun_trace_report__pch.h.slow -c Vrun_trace_report___024root__2__Slow.cpp
+g++   -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vrun_trace_report__pch.h.slow -c Vrun_trace_report__Syms__Slow.cpp
+g++ -Os  -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vrun_trace_report__pch.h.fast -c Vrun_trace_report.cpp
+g++ -Os  -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vrun_trace_report__pch.h.fast -c Vrun_trace_report___024root__0.cpp
+g++ -Os  -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vrun_trace_report__pch.h.fast -c Vrun_trace_report___024root__1.cpp
+g++ -Os  -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vrun_trace_report__pch.h.fast -c Vrun_trace_report___024root__2.cpp
+g++ -Os  -I.  -MMD -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include -I/mnt/ncsudrive/a/ahangal/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -DVM_VPI=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vrun_trace_report__pch.h.fast -c Vrun_trace_report__main.cpp
+g++    verilated.o verilated_timing.o verilated_threads.o Vrun_trace_report__ALL.a    -pthread -lpthread -latomic   -o vrun_trace_report
+rm Vrun_trace_report__ALL.verilator_deplist.tmp
+make[1]: Leaving directory '/tmp/ooo_rtl_report_obj'
+- V e r i l a t i o n   R e p o r t: Verilator 5.053 devel rev v5.052-59-g72523c3be
+- Verilator: Built from 0.399 MB sources in 11 modules, into 2.468 MB in 10 C++ files needing 0.002 MB
+- Verilator: Walltime 6.439 s (elab=0.014, cvt=0.362, bld=5.611); cpu 0.614 s on 112 threads; allocated 49.195 MB
