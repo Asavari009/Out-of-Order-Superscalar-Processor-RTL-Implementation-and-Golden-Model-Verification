@@ -34,7 +34,6 @@ verif/
   tb_smoke/          Per-module unit tests (Verilator)
   sim_trace/         Full-pipeline trace runners (summary + per-instruction report)
   regression/         Automated golden-vs-RTL regression scripts
-  uvm/                 UVM verification environment (built, not yet run — see docs/README.md)
 docs/README.md        Detailed status log, design decisions, and known-issue history
 Makefile              All the commands below
 run_smoke.sh           Verilator unit-test runner
@@ -78,9 +77,4 @@ summary *and* full per-instruction report saved to
 - Python 3 (regression comparison scripts)
 - Siemens QuestaSim (cross-validated separately, see `run_smoke_questa.sh`)
 
-## Status
 
-RTL design and correctness: **done and verified exact**. UVM formal
-verification environment: built, not yet compiled/run on a real
-simulator. Full history — every bug found, root-caused, and fixed along
-the way — is in [`docs/README.md`](docs/README.md).
