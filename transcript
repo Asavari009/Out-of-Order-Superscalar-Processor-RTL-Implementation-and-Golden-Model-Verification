@@ -1,0 +1,45 @@
+# //  Questa Sim-64
+# //  Version 2026.1 linux_x86_64 Jan 25 2026
+# //
+# // Unpublished work. Copyright 2026 Siemens
+# //
+# // This material contains trade secrets or otherwise confidential information
+# // owned by Siemens Industry Software Inc. or its affiliates (collectively,
+# // "SISW"), or its licensors. Access to and use of this information is strictly
+# // limited as set forth in the Customer's applicable agreements with SISW.
+# //
+# // This material may not be copied, distributed, or otherwise disclosed outside
+# // of the Customer's facilities without the express written permission of SISW,
+# // and may not be used in any way not expressly authorized by SISW.
+# //
+# ** Note: (vsim-220) '/mnt/apps/public/COE/mg_apps/questa2026.1/questasim/modelsim.ini' is used as the ini file.
+# vsim -voptargs="+acc" work.tb_rob -do "wave.do" 
+# Start time: 14:17:54 on Sep 13,2026
+# ** Note: (vsim-8009) Loading existing optimized design _opt
+# Loading sv_std.std
+# Loading work.ooo_pkg(fast)
+# Loading work.tb_rob(fast)
+# Loading work.rob(fast)
+# do wave.do
+# sim start
+# t1
+# t2
+# t3
+# PASS: reset free_entries == ROB_SIZE
+# PASS: alloc_rob_idx[0]==0
+# PASS: alloc_rob_idx[1]==1
+# PASS: free_entries==2 after alloc 2
+# PASS: rt_count==0 (nothing ready)
+# PASS: rt_count==1 (pre-edge, entry0 ready)
+# PASS: rt_valid[0]==1
+# PASS: rt_rob_idx[0]==0
+# PASS: rt_dst_areg[0]==5
+# PASS: rt_seq_no[0]==0
+# PASS: entry_ready[0]==1 (readiness query port)
+# PASS: entry_ready[1]==0 (not woken)
+# PASS: free_entries==3 after 1 retire
+# ALL PASS
+# ** Note: $finish    : verif/tb_smoke/tb_rob.sv(130)
+#    Time: 76 ns  Iteration: 0  Instance: /tb_rob
+# 1
+# Break in Module tb_rob at verif/tb_smoke/tb_rob.sv line 130
