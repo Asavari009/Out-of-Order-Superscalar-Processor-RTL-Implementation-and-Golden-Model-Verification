@@ -1,0 +1,14 @@
+# val_configs.csv -- single source of truth for the 8 official validation
+# regression configs. Both compare_report.py and run_val_regression.sh (and
+# later, the UVM test_val_traces test) read this same file, so there's
+# exactly one place these numbers live.
+#
+# name,rob_size,iq_size,width,trace_file,expected_file
+val1,16,8,1,val_trace_gcc1,val1.txt
+val2,16,8,2,val_trace_gcc1,val2.txt
+val3,60,15,3,val_trace_gcc1,val3.txt
+val4,64,16,8,val_trace_gcc1,val4.txt
+val5,64,16,4,val_trace_perl1,val5.txt
+val6,128,16,5,val_trace_perl1,val6.txt
+val7,256,64,5,val_trace_perl1,val7.txt
+val8,512,64,7,val_trace_perl1,val8.txt
