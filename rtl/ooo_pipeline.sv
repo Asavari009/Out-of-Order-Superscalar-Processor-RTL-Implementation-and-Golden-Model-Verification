@@ -5,37 +5,15 @@
 // -> Dispatch+Issue (issue_queue.sv) -> Execute (exec_units.sv) -> Retire
 // (rob.sv, which also does allocation at Rename time).
 //
-// PIPELINE REGISTER NAMING (matches the spec exactly -- named for the
-// stage each one feeds INTO, per Section 5.1 Table 1):
+// PIPELINE REGISTER NAMING 
 //   DE feeds Decode   (holds fetched, undecoded data -- decode is a pure
 //                       identity passthrough here; see decoded_instr_t)
 //   RN feeds Rename   (holds decoded, unrenamed data)
 //   RR feeds RegRead  (holds renamed data: tags assigned, readiness TBD)
 //   DI feeds Dispatch (holds renamed + readiness-checked data)
-// then the Issue Queue itself is the register feeding Issue, exec_units'
+// then the Issue Queue itself is the register feeding Issue, exec_units
 // internal pooled slots are the register feeding Writeback, and the ROB's
-// own retire-selection is what feeds Retire -- no separate registers
-// needed for those two, see rtl/exec_units.sv and rtl/rob.sv headers.
-//
-// BACKPRESSURE, THE HARDWARE-NATIVE VERSION OF THE C++ MODEL'S REVERSE
-// CALL ORDER: the golden model calls Retire()...Fetch() in reverse order
-// each software "cycle" specifically so a stage sees the PREVIOUS stage's
-// already-updated-this-cycle state. Real hardware doesn't need that
-// trick -- every always_ff fires in parallel on the same edge -- but the
-// combinational "can I advance" logic below is computed in the exact
-// same reverse (downstream-to-upstream) dependency direction, which is
-// what makes it equivalent: each `*_fire` signal here depends on the
-// NEXT stage's availability, chaining from Retire (unconditional) back
-// to the external fetch port (`de_ready_for_fetch`).
-//
-// EXTERNAL FETCH PORT CONTRACT: this design cannot read a trace file
-// itself (synthesizable RTL has no file I/O) -- an external driver
-// (later, the UVM trace_driver) supplies WIDTH decoded instructions per
-// cycle on fe_valid/fe_data, gated by fe_fire. The driver MUST check
-// de_ready_for_fetch before deciding whether its push this cycle will
-// actually land: if false, the push is silently dropped (matching
-// pipe_reg's in_fire/avail contract) and the driver must re-drive the
-// SAME bundle next cycle rather than advancing its trace pointer.
+// own retire-selection is what feeds Retire 
 //=============================================================================
 `include "ooo_pkg.sv"
 
@@ -104,12 +82,11 @@ module ooo_pipeline
   // ------------------------------------------------------------------
   // Rename (rmt.sv) + ROB allocation, gated on: RN occupied, RR has
   // room, AND the ROB has enough free entries for the whole bundle
-  // (matches the spec's Rename() gating exactly).
   // ------------------------------------------------------------------
   logic [ROBIDX_W:0]   rob_free_entries;
-  logic [ROB_SIZE-1:0] rob_entry_ready; // reserved for future use (RR/DI ready recompute from registered state -- currently sched_reg only uses live wb broadcast; see docs/README.md limitations note)
-  logic [GEN_W-1:0]    rob_entry_gen[ROB_SIZE]; // live generation per ROB slot, for staleness detection (see ooo_pkg.sv GEN_W)
-  logic [ROB_SIZE-1:0] rob_entry_valid; // is each slot currently allocated at all (see rob.sv entry_valid comment)
+  logic [ROB_SIZE-1:0] rob_entry_ready; // reserved for future use (RR/DI ready recompute from registered state 
+  logic [GEN_W-1:0]    rob_entry_gen[ROB_SIZE]; // live generation per ROB slot, for staleness detection 
+  logic [ROB_SIZE-1:0] rob_entry_valid; // is each slot currently allocated at all
   logic [ROBIDX_W-1:0] alloc_rob_idx[WIDTH];
   logic [GEN_W-1:0]    alloc_gen[WIDTH]; // generation each newly-allocated slot will carry
 
@@ -135,15 +112,6 @@ module ooo_pipeline
 
   src_tag_t rn_src1_tag[WIDTH], rn_src2_tag[WIDTH];
 
-  // Declared here (ahead of its first use in the rename_fire assign
-  // below) rather than down with the rest of the RR register's signals
-  // -- QuestaSim, unlike Verilator, requires a `logic` referenced in a
-  // continuous assign to be declared textually before that assign
-  // (found via real compilation on Questa; Verilator silently accepted
-  // the out-of-order reference). Verilator's leniency here was masking
-  // a genuine style issue, not a case where the two tools disagree on
-  // correct behavior -- Questa's stricter reading is the safer one to
-  // follow project-wide.
   logic             rr_occupied, rr_avail, regread_fire;
 
   // Retire-clear feed for the RMT: up to WIDTH ports, straight from the
@@ -168,10 +136,7 @@ module ooo_pipeline
   assign rename_fire = rn_occupied && rr_avail && (rob_free_entries >= {1'b0, rn_valid_count});
 
   // ------------------------------------------------------------------
-  // RR register (rename -> regread boundary). Loaded with the freshly
-  // renamed bundle exactly when rename_fire commits. Initial readiness:
-  // a committed (non-ROB) source is ready immediately; a ROB-pending
-  // source starts not-ready and is tracked live by sched_reg from here.
+  // RR register (rename -> regread boundary). 
   // ------------------------------------------------------------------
   logic [WIDTH-1:0] rr_valid;
   iflight_t         rr_in_data[WIDTH], rr_data[WIDTH];
@@ -191,30 +156,6 @@ module ooo_pipeline
       t.dst_areg   = rn_dst_areg_p[i];
       t.src1       = rn_src1_tag[i];
       t.src2       = rn_src2_tag[i];
-      // Initial readiness at rename time: not just "not ROB-pending" --
-      // ALSO check whether the ROB entry has ALREADY become ready by now
-      // (rob_entry_ready), not just "will a live broadcast happen while
-      // I'm sitting in a wakeup-listening stage." REAL BUG FOUND ON A
-      // FULL TRACE (not any hand-built test): if a producer finishes and
-      // broadcasts its wakeup BEFORE the consumer is even renamed (e.g.
-      // the consumer was still sitting in DE/RN, which don't listen for
-      // wakeup at all), the consumer would previously never learn its
-      // dependency was already satisfied -- the broadcast pulse is long
-      // gone by the time it reaches a listening stage. This was exactly
-      // what `rob_entry_ready` was added for (see rob.sv), but it was
-      // wired as an output and never actually consulted here until now.
-      //
-      // SECOND, RELATED BUG (found via the report-generator diff, once
-      // that tool was finally trustworthy): rob_entry_ready alone is
-      // REGISTERED state, one cycle behind a live broadcast. If a
-      // producer's wakeup broadcasts on the EXACT SAME cycle a consumer
-      // is being renamed, rob_entry_ready hasn't updated yet (it updates
-      // on the NEXT edge) -- so this check would still miss it, exactly
-      // like the case above but by one cycle instead of many. Fixed by
-      // ALSO checking the live wb_valid_bus/wb_idx_bus broadcast this
-      // same cycle, matching the "effective readiness = registered OR
-      // live broadcast" pattern already used everywhere else (sched_reg.sv,
-      // issue_queue.sv) -- this was the one place that pattern was missing.
       rn_src1_live_wake[i] = 1'b0;
       rn_src2_live_wake[i] = 1'b0;
       if (rn_src1_tag[i].is_rob)
@@ -244,8 +185,7 @@ module ooo_pipeline
 
   // ------------------------------------------------------------------
   // DI register (regread -> dispatch boundary). RegisterRead's whole
-  // job is already done by RR's effective-ready output -- this is a
-  // straight passthrough when both sides allow.
+  // job is already done by RR's effective-ready output 
   // ------------------------------------------------------------------
   logic [WIDTH-1:0] di_valid;
   iflight_t         di_data[WIDTH];
@@ -269,8 +209,7 @@ module ooo_pipeline
   assign dispatch_fire = di_occupied && (iq_free_entries >= {1'b0, di_valid_count});
 
   // ------------------------------------------------------------------
-  // Issue Queue (dispatch + issue) -- unpack di_data's per-lane fields
-  // into the individual ports issue_queue.sv expects.
+  // Issue Queue (dispatch + issue) 
   // ------------------------------------------------------------------
   logic [SEQ_W-1:0]    di_seq_no_p[WIDTH];
   op_type_e            di_op_type_p[WIDTH];
