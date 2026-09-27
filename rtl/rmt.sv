@@ -3,12 +3,10 @@
 //
 // Mirrors Rename() in golden/sim_proc.cc:
 //   - rename_map_table[areg] = {valid, tag=ROB index}
-//   - A WIDTH-wide rename bundle is renamed "in program order" (spec 5.2):
+//   - A WIDTH-wide rename bundle is renamed "in program order":
 //     if instruction i and instruction i+1..WIDTH-1 in the SAME bundle
 //     share a register (WAR/WAW/RAW within the bundle), later instructions
-//     must see the earlier instruction's fresh rename. The C++ model gets
-//     this for free from its sequential for-loop; here it's explicit
-//     intra-bundle forwarding logic.
+//     must see the earlier instruction's fresh rename. 
 //   - At retire, if rmt[areg].tag == retiring ROB index, invalidate the
 //     entry (mirrors sim_proc.cc Retire(), the RMT-clear loop).
 //   - Rename-write (this cycle) beats retire-clear (this cycle) on the same
@@ -56,9 +54,6 @@ module rmt
   // ------------------------------------------------------------------
   // Combinational lookahead: "shadow" copy of the RMT that reflects
   // the effect of dst writes from earlier instructions (index < i) in
-  // THIS SAME bundle, so source lookups for instruction i see them.
-  // shadow_valid/shadow_tag[i] = state of the RMT just before renaming
-  // instruction i (i.e. after applying instructions 0..i-1 of this bundle).
   // ------------------------------------------------------------------
   logic                shadow_valid [WIDTH+1][NUM_ARCH_REGS];
   logic [ROBIDX_W-1:0] shadow_tag   [WIDTH+1][NUM_ARCH_REGS];
@@ -85,12 +80,6 @@ module rmt
   end
 
   // Source lookups for instruction i use shadow state BEFORE instruction i
-  // (i.e. shadow_valid/tag[i], reflecting insns 0..i-1 of this bundle).
-  //
-  // NOTE: built via a scalar local `t` then assigned whole to the array
-  // element in one shot -- Icarus Verilog (local smoke-test sim only)
-  // doesn't support field-by-field assignment into an unpacked-array-of-
-  // struct output port. This form is also just cleaner in any simulator.
   always_comb begin
     src_tag_t t;
     for (int i = 0; i < WIDTH; i++) begin
@@ -120,27 +109,18 @@ module rmt
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       // Whole-array assignment pattern instead of a for-loop with
-      // nonblocking assigns to array elements: functionally identical,
-      // and Verilator (unlike Icarus) rejects the for-loop form here
-      // ("delayed assignment to array inside for loops" is unsupported
-      // in its synthesizable subset) -- this form works cleanly in both.
+      // nonblocking assigns to array elements
       valid_q <= '{default: 1'b0};
       tag_q   <= '{default: '0};
       gen_q   <= '{default: '0};
     end else begin
-      // 1) retire-time invalidation, up to WIDTH entries this cycle. No
-      //    interaction between lanes needed: rob_idx values are unique
-      //    per instruction, so at most one lane's tag can ever match a
-      //    given tag_q[areg] value, regardless of how many lanes target
-      //    the same architectural register this cycle.
+      // 1) retire-time invalidation, up to WIDTH entries this cycle
       for (int i = 0; i < WIDTH; i++) begin
         if (rt_valid[i] && valid_q[rt_areg[i]] && (tag_q[rt_areg[i]] == rt_rob_idx[i])) begin
           valid_q[rt_areg[i]] <= 1'b0;
         end
       end
-      // 2) rename-time writes for this bundle, applied in program order so
-      //    the last instruction in the bundle to touch a given dest reg wins
-      //    (matches the shadow-chain semantics used for src lookups above)
+      // 2) rename-time writes for this bundle, applied in program order 
       if (rn_fire) begin
         for (int i = 0; i < WIDTH; i++) begin
           if (rn_valid[i] && rn_dst_has[i]) begin
