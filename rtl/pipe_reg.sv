@@ -2,26 +2,14 @@
 // pipe_reg.sv -- generic WIDTH-wide pipeline bundle register
 //
 // Represents ONE pipeline register between two stages (e.g. DE, RN, DI).
-// Mirrors the "all-or-nothing" advance rule used throughout the spec's
-// Section 5.2 guide: a stage only pushes its WHOLE bundle into the next
-// register if that register is empty (or being emptied this same cycle
-// by its own downstream consumer) -- never a partial push.
 //
 // Two independent handshake signals, matching pipe_reg's two jobs:
 //   in_fire  -- the PRODUCER (upstream) is pushing a new bundle in. Only
 //               takes effect if this register can currently accept it
-//               (see `avail` below) -- if not, the request is silently
-//               ignored, so the caller must check `avail`/`occupied`
-//               before asserting in_fire, exactly like a ready/valid bus.
+//               
 //   consume  -- the CONSUMER (downstream) is taking the current bundle
 //               out this cycle. This is what frees the register up,
-//               possibly for immediate same-cycle refill by in_fire (the
-//               same "vacate-and-refill in one edge" pattern already
-//               used in issue_queue.sv and exec_units.sv).
-//
-// This module is deliberately generic over the payload type via
-// `parameter type T` -- one well-tested module instantiated 6 times (for
-// DE/RN/RR/DI/WB/RT) beats 6 bespoke ones, per the original project plan.
+//               possibly for immediate same-cycle refill by in_fire 
 //=============================================================================
 `include "ooo_pkg.sv"
 
@@ -33,7 +21,7 @@ module pipe_reg
 )(
   input  logic clk,
   input  logic rst_n,
-  input  logic flush,               // synchronous clear (e.g. branch misprediction; unused today but free to wire up later)
+  input  logic flush,               // synchronous clear 
 
   // ---- producer side ------------------------------------------------
   input  logic [WIDTH-1:0] in_valid,
@@ -41,7 +29,7 @@ module pipe_reg
   input  logic              in_fire, // "push in_valid/in_data now" -- only takes effect if avail
 
   // ---- consumer side --------------------------------------------------
-  input  logic              consume, // "I'm taking the current contents this cycle"
+  input  logic              consume, 
 
   // ---- register contents (combinational read of current state) --------
   output logic [WIDTH-1:0] out_valid,
