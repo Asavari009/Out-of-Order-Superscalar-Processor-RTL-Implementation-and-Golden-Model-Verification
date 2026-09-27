@@ -64,9 +64,7 @@ module tb_pipe_reg;
     check("after consume alone: not occupied", occupied === 1'b0);
     check("after consume alone: avail", avail === 1'b1);
 
-    // Same-cycle vacate-and-refill: assert consume AND in_fire together
-    // while occupied -- new data should land THIS edge, not be dropped
-    // or delayed an extra cycle.
+    // Same-cycle vacate-and-refill
     in_valid = 2'b01; in_data[0]=8'h11; in_fire = 1;
     @(posedge clk); #1; // load first bundle
     clear_in();
