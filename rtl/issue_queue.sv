@@ -1,41 +1,5 @@
 //=============================================================================
 // issue_queue.sv -- Issue Queue: wakeup + oldest-first select
-//
-// This is the module the whole project is actually about. Mirrors
-// Dispatch()+Issue() in golden/sim_proc.cc, but as real parallel hardware
-// instead of "sort() then linear scan, called once per software cycle."
-//
-// KEY TIMING DECISION -- same-cycle wakeup-to-select:
-//   In the C++ model, Execute() (which sets ready flags on wakeup) is
-//   called BEFORE Issue() within the same do-while iteration. So an
-//   instruction finishing execution in cycle N can wake a dependent
-//   instruction that *also issues in cycle N* -- zero-cycle wakeup-to-
-//   select. The spec calls this out explicitly ("producers in their last
-//   cycle of execution wake up dependent operands ... this is required to
-//   avoid deadlock"). This RTL reproduces that: an entry's issue-eligible
-//   signal is (registered ready bit) OR (matches a same-cycle wakeup
-//   broadcast), evaluated combinationally, feeding the select logic in the
-//   same cycle. This is the classic "wakeup-select" critical path in a
-//   real OoO scheduler -- expect it to be the timing-critical loop if this
-//   were ever pushed through synthesis.
-//
-// SELECT ALGORITHM:
-//   Oldest-first, WIDTH-wide, over up to IQ_SIZE candidates: iteratively
-//   pick the minimum-seq_no ready candidate not yet picked this cycle,
-//   WIDTH times. O(WIDTH * IQ_SIZE) comparators. This is a direct
-//   structural description, not a synthesis-optimized banked/segmented
-//   scheduler -- correct and traceable beats clever for a project whose
-//   point is the scheduling *algorithm*, and IQ_SIZE / WIDTH values in the
-//   spec (up to 256 / 8) already produce a large compare network either
-//   way.
-//
-// SLOT REUSE:
-//   The C++ model calls Issue() then Dispatch() in the same iteration, so
-//   Dispatch() already sees the IQ space freed by this cycle's issues. To
-//   match that, `free_entries` here = (currently-invalid slots) + (slots
-//   selected for issue this cycle), and a slot vacated by issue this cycle
-//   can be immediately reoccupied by a dispatching instruction on the same
-//   clock edge (see the always_ff: "issued-and-refilled" case).
 //=============================================================================
 `include "ooo_pkg.sv"
 
@@ -121,12 +85,7 @@ module issue_queue
         if (wb_valid[w] && src2_is_rob_q[e] && (wb_idx[w] == src2_tag_q[e]))
           wk_match2[e] = 1'b1;
       end
-      // Staleness: if the ROB slot this entry is waiting on has moved to
-      // a DIFFERENT generation than the one captured at rename time, OR
-      // is currently INVALID (retired but not yet reallocated -- see
-      // rob.sv's entry_valid comment), the slot has been vacated by the
-      // TRUE producer, which can only happen after it already retired.
-      // Treat as ready: the value is long since committed.
+      // Staleness: if the ROB slot this entry is waiting on has moved to.
       stale1[e] = src1_is_rob_q[e] && (!entry_valid[src1_tag_q[e]] || (entry_gen[src1_tag_q[e]] != src1_gen_q[e]));
       stale2[e] = src2_is_rob_q[e] && (!entry_valid[src2_tag_q[e]] || (entry_gen[src2_tag_q[e]] != src2_gen_q[e]));
       eff_ready1[e] = src1_ready_q[e] | wk_match1[e] | stale1[e];
@@ -247,23 +206,12 @@ module issue_queue
   // ------------------------------------------------------------------
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      // Whole-array assignment instead of a for-loop with nonblocking
-      // assigns to array elements -- Verilator's default unroll limit
-      // rejects the for-loop form once IQ_SIZE gets large (found the
-      // same issue in rob.sv at ROB_SIZE=128+; fixing proactively here
-      // since val7/val8 use IQ_SIZE=64).
       valid_q      <= '{default: 1'b0};
       src1_ready_q <= '{default: 1'b0};
       src2_ready_q <= '{default: 1'b0};
     end else begin
       for (int e = 0; e < IQ_SIZE; e++) begin
         if (slot_disp_valid[e]) begin
-          // either a freshly-freed slot getting refilled, or an already-
-          // free slot getting its first occupant -- both look the same.
-          // Pull the whole struct into scalar temps first: Icarus (local
-          // smoke test only) can't handle field access through a second
-          // level of dynamic indexing (array-of-struct indexed by a
-          // signal that is itself indexed by another signal).
           src_tag_t s1, s2;
           s1 = disp_src1[slot_disp_src[e]];
           s2 = disp_src2[slot_disp_src[e]];
