@@ -27,8 +27,8 @@ module tb_iq;
 
   logic [WB_PORTS-1:0] wb_valid;               // packed
   logic [ROBIDX_W-1:0] wb_idx[WB_PORTS];
-  logic [GEN_W-1:0] entry_gen[ROB_SIZE]; // staleness detection; kept all-zero so existing tests see no aliasing
-  logic [ROB_SIZE-1:0] entry_valid; // kept all-1 (nothing "retired") so existing tests aren't affected
+  logic [GEN_W-1:0] entry_gen[ROB_SIZE]; 
+  logic [ROB_SIZE-1:0] entry_valid; 
 
   logic [WIDTH-1:0]    sel_valid;              // packed
   logic [SEQ_W-1:0]    sel_seq_no[WIDTH];
@@ -37,13 +37,6 @@ module tb_iq;
 
   int errors = 0;
   task automatic check(string name, logic cond);
-    // STRICT check: cond===1'b1 required. Plain "if (!cond)" is a real
-    // bug pattern -- if cond is X (unknown, e.g. from an undriven or
-    // unpropagated signal), !cond evaluates to X, and "if (X)" is FALSE
-    // in SystemVerilog, so a naive check silently falls through to PASS.
-    // This bit us for real: exec_units.sv hit an Icarus port-propagation
-    // bug that left outputs at X, and the old check() reported PASS
-    // anyway. === with an explicit 1'b1 check catches X, Z, and 0 alike.
     if (cond === 1'b1) $display("PASS: %s", name);
     else begin errors++; $display("FAIL: %s (cond=%b)", name, cond); end
   endtask
@@ -57,10 +50,6 @@ module tb_iq;
     return t;
   endfunction
 
-  // helper: build a "waiting on ROB idx X" src_tag_t. gen=0 matches
-  // entry_gen[]'s all-zero init above, so the new staleness check never
-  // fires unintentionally in these directed tests -- they're testing
-  // wakeup timing, not staleness, which gets its own dedicated test.
   function automatic src_tag_t mk_wait(logic [ROBIDX_W-1:0] idx);
     src_tag_t t;
     t.valid = 1'b1; t.is_rob = 1'b1; t.tag = idx; t.gen = '0;
@@ -94,11 +83,7 @@ module tb_iq;
     check("reset free_entries==IQ_SIZE", free_entries == IQ_SIZE);
 
     // ---------------------------------------------------------------
-    // Test 1: dispatch 2 ready instructions, out of program order by
-    // seq_no is NOT possible via dispatch (dispatch is always program-
-    // order), so instead dispatch 3 instructions across 2 cycles with
-    // seq_no 5,6 then 3,4, and verify SELECT still picks lowest seq_no
-    // first regardless of arrival/slot order.
+    // Test 1: dispatch 2 ready instructions
     // ---------------------------------------------------------------
     clear_disp();
     disp_fire = 1;
@@ -110,9 +95,7 @@ module tb_iq;
     disp_fire = 1;
     disp_valid[0]=1; disp_seq_no[0]=3; disp_rob_idx[0]=2;
     disp_valid[1]=1; disp_seq_no[1]=4; disp_rob_idx[1]=3;
-    #1; // let this cycle's dispatch combinationally land before checking selects
-    // (selects reflect PREVIOUS cycle's stored entries: seq 5,6 only, since
-    //  this dispatch hasn't landed in registers yet)
+    #1; // let this cycle's dispatch combinationally land 
     check("before 2nd disp lands: 2 ready oldest are seq5,seq6",
           sel_valid[0] && sel_valid[1] &&
           ((sel_seq_no[0]==5 && sel_seq_no[1]==6) ||
@@ -133,10 +116,6 @@ module tb_iq;
 
     // ---------------------------------------------------------------
     // Test 2: dependency + same-cycle wakeup-to-issue.
-    // Dispatch one instr (seq 10) waiting on ROB idx 7 (not ready).
-    // It must NOT be selected while unready, then a wakeup broadcast
-    // for ROB idx 7 must make it selectable in the SAME cycle as the
-    // broadcast (zero-cycle wakeup-to-select).
     // ---------------------------------------------------------------
     clear_disp();
     disp_fire = 1;
