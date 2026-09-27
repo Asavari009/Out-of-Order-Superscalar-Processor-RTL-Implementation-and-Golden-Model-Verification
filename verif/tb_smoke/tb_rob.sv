@@ -60,13 +60,6 @@ module tb_rob;
   endtask
 
   task automatic check(string name, logic cond);
-    // STRICT check: cond===1'b1 required. Plain "if (!cond)" is a real
-    // bug pattern -- if cond is X (unknown, e.g. from an undriven or
-    // unpropagated signal), !cond evaluates to X, and "if (X)" is FALSE
-    // in SystemVerilog, so a naive check silently falls through to PASS.
-    // This bit us for real: exec_units.sv hit an Icarus port-propagation
-    // bug that left outputs at X, and the old check() reported PASS
-    // anyway. === with an explicit 1'b1 check catches X, Z, and 0 alike.
     if (cond === 1'b1) $display("PASS: %s", name);
     else begin errors++; $display("FAIL: %s (cond=%b)", name, cond); end
   endtask
@@ -108,9 +101,6 @@ module tb_rob;
     @(posedge clk); #1;
     clear_wb();
 
-    // ready_q[0] is now set; check the combinational retire-select output
-    // BEFORE the next clock edge consumes it (retire is level-sensitive,
-    // not itself clocked, so it's already valid here)
     check("rt_count==1 (pre-edge, entry0 ready)", rt_count == 1);
     check("rt_valid[0]==1", rt_valid[0] == 1);
     check("rt_rob_idx[0]==0", rt_rob_idx[0] == 0);
@@ -119,7 +109,6 @@ module tb_rob;
     check("entry_ready[0]==1 (readiness query port)", entry_ready[0] == 1'b1);
     check("entry_ready[1]==0 (not woken)", entry_ready[1] == 1'b0);
 
-    // now let the clock edge actually perform the retire
     @(posedge clk); #1;
 
     @(posedge clk); #1;
