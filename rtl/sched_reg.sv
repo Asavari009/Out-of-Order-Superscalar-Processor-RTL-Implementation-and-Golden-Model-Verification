@@ -4,27 +4,13 @@
 // Same producer/consumer handshake as pipe_reg.sv, but specialized for
 // iflight_t payloads and augmented with same-cycle wakeup tracking.
 //
-// WHY THIS EXISTS (see docs/README.md for the full story): re-reading the
-// spec's Execute() description closely, wakeup must reach THREE places on
-// a producer's last cycle of execution -- the IQ, the DI register, and
-// the RR register -- not just the IQ. If an instruction is stalled in DI
-// or RR (e.g. the IQ is momentarily full) and its producer finishes
-// during that stall, it must notice, or it could be dispatched into the
-// IQ with permanently-stale "not ready" bits and deadlock forever
-// (nothing would ever wake it after that point). A bare pipe_reg has no
-// way to do this -- it just holds whatever was loaded until consumed.
-//
 // Two levels of readiness, same pattern as issue_queue.sv's eff_ready:
 //   - REGISTERED readiness (src1_ready_q/src2_ready_q): latched on a
 //     match, persists across stall cycles.
 //   - EFFECTIVE readiness (what out_data actually reports): registered
 //     bit OR a same-cycle match against the current wb_valid/wb_idx
 //     broadcast. This is what lets a producer finishing in cycle N wake
-//     a consumer that ALSO advances out of this register in cycle N --
-//     required because the golden model's Execute() runs before
-//     RegRead()/Dispatch() in its per-cycle call order, so a same-cycle
-//     producer-to-RR/DI wakeup must already be visible when this
-//     register's content is read that same cycle.
+//     a consumer that ALSO advances out of this register in cycle N 
 //=============================================================================
 `include "ooo_pkg.sv"
 
@@ -91,10 +77,7 @@ module sched_reg
         if (wb_valid[w] && data_q[i].src2.is_rob && (TAG_W'(wb_idx[w]) == data_q[i].src2.tag))
           wk_match2[i] = 1'b1;
       end
-      // Staleness (see ooo_pkg.sv GEN_W / rob-tag-aliasing fix): if this
-      // slot's live generation no longer matches what was captured at
-      // rename time, OR the slot is currently invalid (retired but not
-      // yet reallocated), the true producer already retired -- ready.
+      // Staleness
       stale1[i] = data_q[i].src1.is_rob && (!entry_valid[ROBIDX_W'(data_q[i].src1.tag)] || (entry_gen[ROBIDX_W'(data_q[i].src1.tag)] != data_q[i].src1.gen));
       stale2[i] = data_q[i].src2.is_rob && (!entry_valid[ROBIDX_W'(data_q[i].src2.tag)] || (entry_gen[ROBIDX_W'(data_q[i].src2.tag)] != data_q[i].src2.gen));
       eff_ready1[i] = data_q[i].src1_ready | wk_match1[i] | stale1[i];
@@ -103,9 +86,7 @@ module sched_reg
   end
 
   // out_data reports EFFECTIVE readiness (registered OR this-cycle) --
-  // built via a scalar temp per lane, whole-struct-assigned, per the
-  // established pattern (avoids field-assignment-into-array-port issues
-  // seen earlier in rmt.sv).
+  // built via a scalar temp per lane, whole-struct-assigned
   always_comb begin
     iflight_t t;
     for (int i = 0; i < WIDTH; i++) begin
