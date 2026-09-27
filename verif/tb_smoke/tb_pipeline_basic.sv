@@ -1,11 +1,6 @@
 `timescale 1ns/1ps
 `include "ooo_pkg.sv"
-// First true end-to-end integration test: feeds two instructions with a
-// real RAW dependency through the FULLY ASSEMBLED pipeline (DE->RN->RR->
-// DI->IQ->EX->ROB->Retire, all combinational backpressure wired) and
-// confirms the dependent instruction correctly waits for and retires
-// after its producer. This is the first test that exercises the actual
-// stage-to-stage wiring in ooo_pipeline.sv, not an isolated module.
+// First true end-to-end integration test
 module tb_pipeline_basic;
   import ooo_pkg::*;
   localparam int WIDTH=2, ROB_SIZE=8, IQ_SIZE=8;
@@ -41,7 +36,7 @@ module tb_pipeline_basic;
     rst_n=0; @(posedge clk); @(posedge clk); rst_n=1; @(posedge clk); #1;
 
     // instr0: op_type2 (latency 5), dst=r1, no srcs -- the long-latency producer
-    // instr1: op_type0 (latency 1), dst=r2, src1=r1 -- depends on instr0!
+    // instr1: op_type0 (latency 1), dst=r2, src1=r1 -- depends on instr0
     fe_valid = 2'b11; fe_fire=1;
     fe_data[0].seq_no=0; fe_data[0].pc=64'h100; fe_data[0].op_type=OP_TYPE2;
     fe_data[0].dst_has=1; fe_data[0].dst_areg=1;
