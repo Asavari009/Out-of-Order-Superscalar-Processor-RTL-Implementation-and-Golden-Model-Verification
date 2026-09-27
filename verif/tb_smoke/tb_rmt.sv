@@ -31,36 +31,16 @@ module tb_rmt;
 
   int errors = 0;
   task automatic check(string name, logic cond);
-    // STRICT check: cond===1'b1 required. Plain "if (!cond)" is a real
-    // bug pattern -- if cond is X (unknown, e.g. from an undriven or
-    // unpropagated signal), !cond evaluates to X, and "if (X)" is FALSE
-    // in SystemVerilog, so a naive check silently falls through to PASS.
-    // This bit us for real: exec_units.sv hit an Icarus port-propagation
-    // bug that left outputs at X, and the old check() reported PASS
-    // anyway. === with an explicit 1'b1 check catches X, Z, and 0 alike.
     if (cond === 1'b1) $display("PASS: %s", name);
     else begin errors++; $display("FAIL: %s (cond=%b)", name, cond); end
   endtask
 
-  // Icarus (local smoke test only) crashes on `array_of_struct_signal[i].field`
-  // read from outside the module (elab_expr.cc assertion), and separately
-  // doesn't support field access chained directly onto a function call
-  // result. Work around both by copying into a plain local variable first,
-  // then field-accessing that. Real simulators don't need this workaround.
   src_tag_t tmp1, tmp2;
 
   rmt #(.WIDTH(WIDTH), .ROB_SIZE(ROB_SIZE)) dut (.*);
 
   initial begin
     rn_fire = 0;
-    // IMPORTANT: the very first assignment to a packed-vector port signal
-    // must be a WHOLE-VECTOR assignment, not a per-bit/indexed one --
-    // confirmed by direct comparison: initializing via a per-bit loop here
-    // left downstream combinational logic permanently stuck reading stale
-    // values for that signal, while whole-vector init did not. Once a
-    // signal has been assigned as a whole at least once, later per-bit
-    // assignment (e.g. rn_valid[0]=1;) works fine, as seen throughout the
-    // rest of this file.
     rn_valid = '0; rn_src1_has = '0; rn_src2_has = '0; rn_dst_has = '0;
     for (int i=0;i<WIDTH;i++) begin
       rn_src1_areg[i]=0; rn_src2_areg[i]=0; rn_dst_areg[i]=0; rn_rob_idx[i]=0; rn_gen[i]=0;
@@ -70,11 +50,6 @@ module tb_rmt;
 
     rst_n = 0; @(posedge clk); @(posedge clk); rst_n = 1; @(posedge clk); #1;
 
-    // Bundle: instr0 writes r5 (rob idx 3), instr1 reads r5 as src1.
-    // Since r5 was never renamed before, instr0's src lookups should be
-    // "already committed" (is_rob=0). instr1's src1 must see instr0's
-    // FRESH rename (is_rob=1, tag=3) -- this is the intra-bundle
-    // forwarding the C++ model gets for free from its sequential loop.
     rn_valid[0]=1; rn_dst_has[0]=1; rn_dst_areg[0]=5; rn_rob_idx[0]=3;
     rn_src1_has[0]=0; rn_src2_has[0]=0;
 
@@ -145,11 +120,7 @@ module tb_rmt;
 
     // ---------------------------------------------------------------
     // WAW test: instr0 and instr1, SAME bundle, BOTH write r9 (rob idx
-    // 6 and 7 respectively). Program order says instr1's write is the
-    // one that must "win" -- a later lookup of r9 must see tag=7, not
-    // tag=6, and instr1's own rename (as instr1 also happens to read
-    // r9 as src2 here, i.e. RAW+WAW in the same bundle) must see
-    // instr0's write via intra-bundle forwarding, not its own.
+    // 6 and 7 respectively).
     // ---------------------------------------------------------------
     rn_valid[0]=1; rn_dst_has[0]=1; rn_dst_areg[0]=9; rn_rob_idx[0]=6;
     rn_src1_has[0]=0; rn_src2_has[0]=0;
@@ -167,8 +138,7 @@ module tb_rmt;
     rn_fire = 0;
     for (int i=0;i<WIDTH;i++) begin rn_valid[i]=0; rn_dst_has[i]=0; rn_src2_has[i]=0; end
 
-    // fresh lookup of r9 after the bundle commits: must see instr1's
-    // (program-order-LATER) tag=7, not instr0's tag=6
+    // fresh lookup of r9 after the bundle commits
     rn_valid[0]=1; rn_src1_has[0]=1; rn_src1_areg[0]=9;
     #1;
     tmp1 = rn_src1_tag[0];
