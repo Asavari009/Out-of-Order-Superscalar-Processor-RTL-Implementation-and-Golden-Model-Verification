@@ -4,18 +4,7 @@
 // run_trace.sv -- reads a trace file and drives it through ooo_pipeline,
 // reporting summary statistics (Dynamic Instruction Count / Cycles / IPC)
 // in the same format as golden/sim_proc.cc's footer.
-//
-// NOT YET IMPLEMENTED: the full per-instruction FE{}DE{}RN{}...RT{}
-// report line. That needs careful per-field begin/duration semantics
-// matching (see docs/README.md) -- this is the "UVM monitor" work,
-// still ahead. What this DOES give you: does the whole assembled
-// pipeline produce the right ANSWER (same instruction count, same cycle
-// count, same IPC) as the golden model for a real trace -- a genuine,
-// meaningful checkpoint on its own.
-//
-// Usage: pass ROB_SIZE/IQ_SIZE/WIDTH as Verilator -G parameter overrides
-// at compile time (see the Makefile), and the trace file as a runtime
-// plusarg: +trace=/path/to/trace
+
 module run_trace;
   import ooo_pkg::*;
 
@@ -112,11 +101,7 @@ module run_trace;
 
     while (total_retired < total_instrs) begin
       @(posedge clk);
-      #1; // let this edge's combinational logic fully settle before
-          // reading de_ready_for_fetch or rt_count -- checking
-          // immediately after @(posedge clk) with no delay reads
-          // pre-edge (stale) values in some simulators' scheduling,
-          // causing a subtle off-by-one-cycle misalignment.
+      #1; 
       cycle_count++;
       if (de_ready_for_fetch && !all_fetched) begin
         fe_fire = 1;
