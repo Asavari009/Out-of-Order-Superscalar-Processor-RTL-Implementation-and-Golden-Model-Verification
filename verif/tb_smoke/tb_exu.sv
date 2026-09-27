@@ -1,15 +1,7 @@
 `timescale 1ns/1ps
 `include "ooo_pkg.sv"
 
-// Timing model being tested: iss_valid asserted at cycle T is a
-// COMBINATIONAL request this cycle (mirrors IQ's sel_* outputs); the
-// instruction only lands in exec_units' registers at the NEXT posedge,
-// at which point it occupies its first EX cycle. A latency-1 op's first
-// EX cycle IS its last (fires wb_valid immediately after that edge). A
-// latency-L op fires wb_valid after (L-1) further edges. This matches
-// the spec's own FE{5,1}...EX{6,1} example: IS ends at cycle 5, EX
-// begins at cycle 6 -- a full cycle boundary between "selected" and
-// "occupying EX."
+// Timing model being tested
 module tb_exu;
   import ooo_pkg::*;
 
@@ -32,13 +24,6 @@ module tb_exu;
 
   int errors = 0;
   task automatic check(string name, logic cond);
-    // STRICT check: cond===1'b1 required. Plain "if (!cond)" is a real
-    // bug pattern -- if cond is X (unknown, e.g. from an undriven or
-    // unpropagated signal), !cond evaluates to X, and "if (X)" is FALSE
-    // in SystemVerilog, so a naive check silently falls through to PASS.
-    // This bit us for real: exec_units.sv hit an Icarus port-propagation
-    // bug that left outputs at X, and the old check() reported PASS
-    // anyway. === with an explicit 1'b1 check catches X, Z, and 0 alike.
     if (cond === 1'b1) $display("PASS: %s", name);
     else begin errors++; $display("FAIL: %s (cond=%b)", name, cond); end
   endtask
