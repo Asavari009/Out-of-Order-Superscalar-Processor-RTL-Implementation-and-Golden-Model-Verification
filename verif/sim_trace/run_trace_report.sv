@@ -4,7 +4,7 @@
 // run_trace_report.sv -- like run_trace.sv, but reconstructs the FULL
 // per-instruction FE{}DE{}RN{}RR{}DI{}IS{}EX{}WB{}RT{} report line,
 // matching golden/sim_proc.cc's exact format and timestamp semantics
-// (verified directly against the C++ source, not guessed):
+// (verified directly against the C++ source):
 //
 //   FE.begin  = cycle instruction is pushed at the fetch port (fe_fire)
 //   DE.begin  = FE.begin + 1                          (always, by construction:
@@ -15,10 +15,7 @@
 //   IS.begin  = cycle dispatch_fire moves it into the IQ
 //   EX.begin  = cycle the IQ selects it (sel_valid)
 //   WB.begin  = cycle exec_units broadcasts its completion (wb_valid)
-//   RT.begin  = WB.begin + 1                          (always, by construction:
-//               this design has no separate WB holding register --
-//               exec_units' broadcast directly feeds the ROB's registered
-//               ready_q, which takes effect the cycle after the broadcast)
+//   RT.begin  = WB.begin + 1                          
 //   <stage>.duration = next_stage.begin - this_stage.begin, except
 //   RT.duration = actual_retire_cycle - RT.begin  (queueing delay at the
 //                 head of the ROB when WIDTH>1 instructions are ready
@@ -98,12 +95,6 @@ module run_trace_report;
   int unsigned cycle_count;
   int unsigned total_retired;
   logic all_fetched;
-  // Plain fixed-size array instead of an associative array as the
-  // "already retired" guard -- avoiding any possible tool-version-
-  // specific associative-array/.exists() quirk, since the associative-
-  // array version did not reliably block repeats when tested on a
-  // newer tool version (unconfirmed whether that's a tool issue or
-  // symptom of a deeper RTL issue -- see diagnostic prints below).
   bit already_retired_arr[100000];
   assign all_fetched = (fetch_ptr >= total_instrs);
 
@@ -177,23 +168,11 @@ module run_trace_report;
       end
 
       // ---- retire: print the report line now (all timestamps known) ----
-      // Uses top-level ports (rt_count/rt_valid/rt_seq_no), NOT
-      // hierarchical dut.-prefixed access -- a minimal bisection test
-      // (run_trace_retirelog_diag.sv) proved these top-level ports work
-      // correctly even on the tool version that broke the earlier
-      // hierarchical-access version of this exact block. The real
-      // problem is somewhere in the stage-tracking hierarchical probes
-      // below, not port propagation.
       if (rt_count > 0) begin
         for (int i = 0; i < WIDTH; i++) begin
           if (rt_valid[i]) begin
             automatic int seq = rt_seq_no[i];
             if (already_retired_arr[seq]) begin
-              // DIAGNOSTIC: this should never happen. If it does, print
-              // enough ROB internal state to tell whether the ROB itself
-              // is genuinely stuck re-retiring the same entry (real RTL
-              // bug) or whether this is purely a signal-reading artifact
-              // in this testbench.
               $display("REPEAT-RETIRE DETECTED at cycle=%0d: seq=%0d already seen. head_q=%0d v_q[head]=%b ready_q[head]=%b rt_count=%0d",
                         cycle_count, seq, dut.u_rob.head_q, dut.u_rob.v_q[dut.u_rob.head_q],
                         dut.u_rob.ready_q[dut.u_rob.head_q], rt_count);
