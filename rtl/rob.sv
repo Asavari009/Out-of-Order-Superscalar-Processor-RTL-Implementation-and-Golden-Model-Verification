@@ -2,23 +2,16 @@
 // rob.sv -- Reorder Buffer
 //
 // Mirrors the ROB in golden/sim_proc.cc: a circular buffer of {ready, dest,
-// pc}, with head/tail pointers. Differences from the C++ version, both
-// deliberate hardware cleanups:
+// pc}, with head/tail pointers. Differences from the C++ version:
 //
 //   1. Free-entry count: the C++ model recomputes free entries from
 //      head/tail pointer *positions* every call (with a special-cased
 //      branch for head==tail, peeking at rob[tail+/-1] to disambiguate
-//      "totally empty" from "totally full" -- see Rename() in sim_proc.cc).
-//      In hardware that's just asking for an off-by-one bug. We instead
-//      keep an explicit `count_q` register (0..ROB_SIZE), incremented by
-//      #allocated and decremented by #retired each cycle. This is
-//      functionally identical to the C++ logic and much easier to verify.
+//      "totally empty" from "totally full" 
 //
 //   2. Allocation and retirement are both WIDTH-wide per cycle (the C++
 //      model allocates the whole rename bundle in one Rename() call and
-//      retires up to WIDTH per Retire() call already -- this just makes
-//      the width-wide behavior structurally explicit with real pointer
-//      arithmetic instead of a scalar increment in a loop).
+//      retires up to WIDTH per Retire() call already
 //
 // Allocation (from Rename stage):
 //   - alloc_fire + alloc_valid[i] => entry (tail+i) gets {dest, pc, ready=0}
@@ -27,9 +20,7 @@
 //     this is combinational: tail + i, wrapped).
 //
 // Wakeup (from Writeback stage): sets ready=1 for 1 completing instruction
-// per FU per cycle -- the top level fans this out across WIDTH*MAX_LATENCY
-// writeback slots (see ooo_pipeline.sv). To keep the ROB port count sane,
-// we accept up to WB_PORTS simultaneous ready-sets per cycle.
+// per FU per cycle 
 //
 // Retire (in-order, up to WIDTH per cycle): consumes from head while
 // rob[head].ready, exactly like the C++ Retire() while() loop.
@@ -56,22 +47,15 @@ module rob
   // Combinational, registered-state-only view of every entry's ready bit.
   // Callers combine this with the SAME-CYCLE wb_valid/wb_idx broadcast
   // themselves (see ooo_pipeline.sv) to get the same same-cycle wakeup
-  // visibility issue_queue.sv already implements -- this port alone only
-  // reflects wakeups that landed on a PRIOR cycle.
+  // visibility issue_queue.sv already implements 
   output logic [ROB_SIZE-1:0] entry_ready,
   // Whether each slot is currently allocated at all. A caller's stale
   // check must treat an INVALID slot as ready too, not just a
   // generation mismatch: generation only increments at ALLOCATION, not
   // at retire, so a slot that has retired but not yet been reallocated
-  // still shows its OLD (matching) generation to a late-arriving
-  // consumer -- which would otherwise see "generation matches" (looks
-  // current) AND "ready_q cleared" (looks not-ready), a false permanent
-  // stall. v_q[idx]==0 unambiguously means that instruction retired
-  // (nothing else ever clears it), so the value is definitely available.
+  // still shows its OLD (matching) generation to a late-arriving consumer 
   output logic [ROB_SIZE-1:0] entry_valid,
-  // Current live generation per slot -- callers compare their STORED
-  // src_tag_t.gen against this to detect a stale tag (see GEN_W comment
-  // in ooo_pkg.sv for the full story on why this exists).
+  // Current live generation per slot 
   output logic [GEN_W-1:0]    entry_gen [ROB_SIZE],
 
   input  logic                 alloc_fire,             // Rename bundle commits
@@ -192,9 +176,7 @@ module rob
       // assigns to array elements: functionally identical (same pattern
       // already used in rmt.sv), and Verilator's default unroll limit
       // rejects the for-loop form here once ROB_SIZE gets large (found
-      // when testing ROB_SIZE=128+ configs -- val1-5's smaller ROB_SIZE
-      // happened to fit under the default unroll threshold, masking this
-      // until larger configs were tried).
+      // when testing ROB_SIZE=128+ configs 
       v_q     <= '{default: 1'b0};
       ready_q <= '{default: 1'b0};
       gen_q   <= '{default: '0};
@@ -215,7 +197,7 @@ module rob
         tail_q <= wrap_add(tail_q, alloc_count);
       end
 
-      // wakeup (mark ready) -- independent of alloc/retire this cycle
+      // wakeup (mark ready) 
       for (int w = 0; w < WB_PORTS; w++) begin
         if (wb_valid[w]) ready_q[wb_idx[w]] <= 1'b1;
       end
